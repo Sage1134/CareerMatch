@@ -20,7 +20,10 @@ function register(event) {
         };
 
         socket.onmessage = function(event) {
-            alert(event.data)
+            var data = JSON.parse(event.data);
+            if (data["purpose"] == "registerResult") {
+                alert(data["result"]);
+            }
             socket.close(1000, "Closing Connection");
         };
 
