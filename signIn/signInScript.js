@@ -14,7 +14,7 @@ function signIn(event) {
     const socket = new WebSocket(isLocalConnection ? 'ws://10.0.0.138:1134' : 'ws://99.245.65.253:1134');
 
     socket.onopen = function (event) {
-        socket.send(JSON.stringify(event.data));
+        socket.send(JSON.stringify(data));
     };
 
     socket.onmessage = function(event) {

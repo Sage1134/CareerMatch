@@ -13,7 +13,7 @@ async def addSessionToken(username, token):
     sessionTokens[username] = token
 
     async def expireToken():
-        await asyncio.sleep(86400)
+        await asyncio.sleep(86)
         if username in sessionTokens.keys() and sessionTokens[username] == token:
             del sessionTokens[username]
 
@@ -105,13 +105,14 @@ port = os.environ.get("Port")
 
 async def newClientConnected(client_socket):
     try:
-        print("Connection!")
         connectedClients.add(client_socket)
         data = await client_socket.recv()
         data = json.loads(data)
         
         if data["purpose"] == "registration":
             await register(client_socket, data)
+        elif data["purpose"] == "signIn":
+            await signIn(client_socket, data)
     except:
         pass
 
