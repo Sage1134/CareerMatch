@@ -36,7 +36,24 @@
                         <div id="skillList"></div>
                     </div>
                     <div id="postJobTab" class="contentTab">
-                        <p>Post A Job Content</p>
+                        <h2>Post A Job Opportunity</h2>
+                        <form id="jobForm" onsubmit="submitJobForm(event)">
+                    
+                            <label>Job Name:</label>
+                            <input type="text" id="jobName" required>
+                    
+                            <label>Short Description:</label>
+                            <input type="text" id="description" required>
+
+                            <label>Job Skills:</label>
+                            <input type="text" id="requiredSkill" placeholder="Enter a skill required for this job">
+                            <button type="button" id="insertSkill">Add Skill</button>
+                    
+                            <div id="jobSkillList"></div>
+                    
+                            <button type="submit">Post Job</button>
+                        </form>
+                        <div id="jobList"></div>
                     </div>
                     <div id="matchesTab" class="contentTab">
                         <p>Matches Content</p>

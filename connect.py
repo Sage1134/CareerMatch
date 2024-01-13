@@ -118,6 +118,8 @@ async def newClientConnected(client_socket):
             await signIn(client_socket, data)
         elif data["purpose"] == "addSkill":
             await addSkill(client_socket, data)
+        elif data["purpose"] == "postJob":
+            await postJob(client_socket, data)
     except:
         pass
 
@@ -181,6 +183,37 @@ async def addSkill(client_socket, data):
                         currentSkills.append(skill)
                 setData(["profileSkills", username], currentSkills)
                 data = {"purpose": "skillAdded"}
+            else:
+                data = {"purpose": "fail"}
+        else:
+            data = {"purpose": "fail"}
+        await client_socket.send(json.dumps(data))
+    except:
+        pass
+    finally:
+        connectedClients.remove(client_socket)
+        
+async def postJob(client_socket, data):
+    try:
+        sessionID = data["sessionToken"]
+        username = data["username"]
+        if username in sessionTokens.keys():
+            if sessionTokens[username] == sessionID:
+                currentJobs = getData(["postedJobs", username])
+                jobName = data["jobName"].strip()
+                if currentJobs == None:
+                    currentJobs = {}
+                job = {"description": data["description"],
+                        "skills": data["skills"]}
+                if len(jobName) >= 1:
+                    if jobName not in currentJobs.keys():
+                        currentJobs[jobName] = job
+                        setData(["postedJobs", username], currentJobs)
+                        data = {"purpose": "jobPosted"}
+                    else:
+                        data = {"purpose": "jobDuplicate"}
+                else:
+                    data = {"purpose": "invalidJobName"}
             else:
                 data = {"purpose": "fail"}
         else:
