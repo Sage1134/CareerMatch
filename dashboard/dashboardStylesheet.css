@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap');
+
+body {
+    background-color: rgb(200, 220, 255);
+    font-family: Rubik, sans-serif;
+    margin: 0px;
+    padding: 0px;
+}
+
+#container {
+    background-color: rgb(200, 220, 255);
+    display: flex;
+}
+
+#sidebar {
+    position: absolute;
+    color: white;
+    width: 18vw;
+    height: 100vh;
+    background-color: rgb(40, 40, 70);
+    border: 0px;
+    border-right: 0.5vw;
+    border-style: solid;
+    border-color: rgb(30, 30, 60);
+    box-shadow: 5px 0px 1vw rgba(0, 0, 0, 0.8);
+}
+
+#main {
+    background-color: rgb(200, 220, 255);
+    margin-left: 18vw;
+    padding: 20px;
+}
+
+#welcome {
+    margin: 0px;
+    color: black;
+}

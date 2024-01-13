@@ -8,7 +8,7 @@ import hashlib
 import uuid
 from gensim.models import Word2Vec
 
-matchModel = Word2Vec.load("matchModel.model")
+matchModel = Word2Vec.load("matchModel/matchModel.model")
 
 sessionTokens = dict()
 
