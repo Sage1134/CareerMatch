@@ -91,11 +91,12 @@ port = os.environ.get("Port")
 
 async def newClientConnected(client_socket):
     try:
+        print("Connection!")
         connectedClients.add(client_socket)
         data = await client_socket.recv()
         data = json.loads(data)
-
-        if data["purpose"] == "Registration":
+        
+        if data["purpose"] == "registration":
             await register(client_socket, data)
     except:
         pass
@@ -119,6 +120,7 @@ async def register(client_socket, data):
     finally:
         connectedClients.remove(client_socket)
 
+ip, port = "10.0.0.138", 1134
 async def startServer():
     print("Server Started")
     await websockets.serve(newClientConnected, ip, port)
