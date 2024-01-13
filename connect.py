@@ -6,6 +6,9 @@ import asyncio
 import json
 import hashlib
 import uuid
+from gensim.models import Word2Vec
+
+matchModel = Word2Vec.load("matchModel.model")
 
 sessionTokens = dict()
 
