@@ -1,1 +1,4 @@
 Vars.env
+matchModel/Data.json
+matchModel/jobPostings.csv
+matchModel/matchModel.model
