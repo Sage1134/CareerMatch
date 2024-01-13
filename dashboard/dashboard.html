@@ -8,25 +8,42 @@
     <body>
         <div id="container">
             <div id="sidebar">
-                <div id="updateProfile">
+                <div class="tab" data-tab="updateProfile">
                     <button>Update Profile</button>
                 </div>
-                <div id="postJob">
+                <div class="tab" data-tab="postJob">
                     <button>Post A Job</button>
                 </div>
-                <div id="matches">
+                <div class="tab" data-tab="matches">
                     <button>Matches</button>
                 </div>
-                <div id="messages">
+                <div class="tab" data-tab="messages">
                     <button>Messages</button>
                 </div>
-                <div id="signOut">
-                    <button>Sign Out</button>
-                </div>
+                <button>Sign Out</button>
             </div>
             <div id="main">
                 <div id="title">
                     <h1 id="welcome">Welcome</h1>
+                </div>
+                <div id="content">
+                    <div id="updateProfileTab" class="contentTab">
+                        <h2>Profile Skills</h2>
+                        <div>
+                            <input type="text" id="newSkill" placeholder="Enter a new skill">
+                            <button onclick="addSkill()">Add Skill</button>
+                        </div>
+                        <div id="skillList"></div>
+                    </div>
+                    <div id="postJobTab" class="contentTab">
+                        <p>Post A Job Content</p>
+                    </div>
+                    <div id="matchesTab" class="contentTab">
+                        <p>Matches Content</p>
+                    </div>
+                    <div id="messagesTab" class="contentTab">
+                        <p>Messages Content</p>
+                    </div>
                 </div>
             </div>
         </div>

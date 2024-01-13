@@ -1,8 +1,8 @@
 function signIn(event) {
     event.preventDefault();
 
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
 
     const data = {
         purpose: "signIn",
@@ -10,8 +10,8 @@ function signIn(event) {
         password: password,
       };
 
-    const isLocalConnection = window.location.hostname === '10.0.0.138';
-    const socket = new WebSocket(isLocalConnection ? 'ws://10.0.0.138:1134' : 'ws://99.245.65.253:1134');
+    const isLocalConnection = window.location.hostname === "10.0.0.138";
+    const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
 
     socket.onopen = function (event) {
         socket.send(JSON.stringify(data));
@@ -30,8 +30,8 @@ function signIn(event) {
 
         socket.close(1000, "Closing Connection");
 
-        document.getElementById('username').value = "";
-        document.getElementById('password').value = "";
+        document.getElementById("username").value = "";
+        document.getElementById("password").value = "";
     };
 }
 

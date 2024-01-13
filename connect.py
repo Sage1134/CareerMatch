@@ -116,6 +116,8 @@ async def newClientConnected(client_socket):
             await register(client_socket, data)
         elif data["purpose"] == "signIn":
             await signIn(client_socket, data)
+        elif data["purpose"] == "addSkill":
+            await addSkill(client_socket, data)
     except:
         pass
 
@@ -156,6 +158,31 @@ async def signIn(client_socket, data):
             data = {"purpose": "success",
                 "sessionToken": sessionToken,
                 "redirect": "../dashboard/dashboard.html"}
+        else:
+            data = {"purpose": "fail"}
+        await client_socket.send(json.dumps(data))
+    except:
+        pass
+    finally:
+        connectedClients.remove(client_socket)
+
+async def addSkill(client_socket, data):
+    try:
+        sessionID = data["sessionToken"]
+        username = data["username"]
+        if username in sessionTokens.keys():
+            if sessionTokens[username] == sessionID:
+                currentSkills = getData(["profileSkills", username])
+                if currentSkills == None:
+                    currentSkills = []
+                skill = data["skill"].strip()
+                if len(skill) >= 1:
+                    if skill not in currentSkills:
+                        currentSkills.append(skill)
+                setData(["profileSkills", username], currentSkills)
+                data = {"purpose": "skillAdded"}
+            else:
+                data = {"purpose": "fail"}
         else:
             data = {"purpose": "fail"}
         await client_socket.send(json.dumps(data))
