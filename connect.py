@@ -181,8 +181,9 @@ async def addSkill(client_socket, data):
                 if len(skill) >= 1:
                     if skill not in currentSkills:
                         currentSkills.append(skill)
-                setData(["profileSkills", username], currentSkills)
+                        setData(["profileSkills", username], currentSkills)
                 data = {"purpose": "skillAdded"}
+                determineJobs(username, currentSkills)
             else:
                 data = {"purpose": "fail"}
         else:
@@ -192,7 +193,7 @@ async def addSkill(client_socket, data):
         pass
     finally:
         connectedClients.remove(client_socket)
-        
+
 async def postJob(client_socket, data):
     try:
         sessionID = data["sessionToken"]
@@ -210,6 +211,7 @@ async def postJob(client_socket, data):
                         currentJobs[jobName] = job
                         setData(["postedJobs", username], currentJobs)
                         data = {"purpose": "jobPosted"}
+                        determineEmployees(username, jobName, job["skills"])
                     else:
                         data = {"purpose": "jobDuplicate"}
                 else:
@@ -224,6 +226,94 @@ async def postJob(client_socket, data):
     finally:
         connectedClients.remove(client_socket)
 
+setData(["employeeMatches"], {})
+setData(["jobMatches"], {})
+
+def determineEmployees(username, job, skills):
+    matches = getData(["employeeMatches", username])
+    if matches is None:
+        matches = {}
+
+    profiles = getData(["profileSkills"])
+    if username in profiles:
+        del profiles[username]
+
+    for employee_username, profileSkills in profiles.items():
+        score = calculateMatchScore(skills, profileSkills)
+        if score >= 0.6:
+            data = {
+                "job": job,
+                "matchScore": score,
+                "matchSkills": profileSkills
+            }
+            matches[employee_username + " | " + job] = data
+
+            employeeMatches = getData(["jobMatches", employee_username])
+            if employeeMatches is None:
+                employeeMatches = {}
+            job_match_data = {
+                "job": job,
+                "matchScore": score,
+                "matchSkills": skills
+            }
+            employeeMatches[username + " | " + job] = job_match_data
+            setData(["jobMatches", employee_username], employeeMatches)
+
+    setData(["employeeMatches", username], matches)
+               
+def determineJobs(username, skills):
+    matches = getData(["jobMatches", username])
+    if matches is None:
+        matches = {}
+
+    jobs = getData(["postedJobs"])
+    if username in jobs:
+        del jobs[username]
+
+    for poster_username, posted_jobs in jobs.items():
+        for job_name, job_data in posted_jobs.items():
+            jobSkills = job_data.get("skills", [])
+            score = calculateMatchScore(skills, jobSkills)
+            if score >= 0.6:
+                data = {
+                    "job": job_name,
+                    "matchScore": score,
+                    "matchSkills": jobSkills
+                }
+                matches[poster_username + " | " + job_name] = data
+
+                jobMatches = getData(["employeeMatches", poster_username])
+                if jobMatches is None:
+                    jobMatches = {}
+                employee_match_data = {
+                    "job": job_name,
+                    "matchScore": score,
+                    "matchSkills": skills
+                }
+                jobMatches[username + " | " + job_name] = employee_match_data
+                setData(["employeeMatches", poster_username], jobMatches)
+
+    setData(["jobMatches", username], matches)
+
+    
+def determineSimilarity(w1, w2):
+    try:
+        return matchModel.wv.similarity(w1=w1, w2=w2)
+    except:
+        print("e")
+        return 0.25
+
+def calculateMatchScore(partyA, partyB):
+    matchScores = []
+    for i in partyA:
+        currentTermScores = []
+        for j in partyB:
+            currentTermScores.append(determineSimilarity(i, j))
+        if len(currentTermScores) > 0:
+            matchScores.append(max(currentTermScores))
+    if len(matchScores) == 0:
+        return 0
+    return min((sum(matchScores) / len(matchScores)) * 1.15, 1)
 
 ip, port = "10.0.0.138", 1134
 async def startServer():
