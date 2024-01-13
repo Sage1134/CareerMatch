@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 import websockets
 import os
 import asyncio
+import json
+import hashlib
 
 load_dotenv("Vars.env")
 uri = os.environ.get("MONGODB_URI")
@@ -90,9 +92,32 @@ port = os.environ.get("Port")
 async def newClientConnected(client_socket):
     try:
         connectedClients.add(client_socket)
-        connectionPurpose = await client_socket.recv()
+        data = await client_socket.recv()
+        data = json.loads(data)
+
+        if data["purpose"] == "Registration":
+            await register(client_socket, data)
     except:
         pass
+
+async def register(client_socket, data):
+    try:
+        username = data["username"]
+        password = data["password"]
+
+        if getData(["Credentials", username]) == None:
+            hash_object = hashlib.sha256()
+            hash_object.update(password.encode())
+            hashed_password = hash_object.hexdigest()
+            setData(["Credentials", username, "password"], hashed_password)
+                
+            await client_socket.send("Registration Successful! Please Sign In.")
+        else:
+            await client_socket.send("Username Already Taken!")
+    except:
+        pass
+    finally:
+        connectedClients.remove(client_socket)
 
 async def startServer():
     print("Server Started")
