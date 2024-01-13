@@ -65,3 +65,7 @@ body {
     height: 90%;
     background-color: rgb(160, 180, 200);
 }
+
+.match {
+    background-color: rgb(150, 170, 190);
+}

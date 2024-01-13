@@ -20,7 +20,101 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
     document.getElementById("insertSkill").addEventListener("click", insertSkill);
+    document.getElementById("matchesTabButton").addEventListener("click", function() {
+        const isLocalConnection = window.location.hostname === "10.0.0.138";
+        const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
+        
+        const data = {
+            purpose: "getMatches",
+            username: username,
+            sessionToken: sessionID,
+          };
+    
+        socket.onopen = function (event) {
+            socket.send(JSON.stringify(data));
+        };
+
+        socket.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+            if (data["purpose"] == "returningMatches") {
+                displayMatches(data);
+            }
+            else if (data["purpose"] == "fail") {
+                alert("Session Invalid Or Expired");
+                window.location.href = "../signIn/signIn.html";
+            }
+
+            socket.close(1000, "Closing Connection");
+        };
+        })
 });
+
+function displayMatches(data) {
+    jobMatchList = document.getElementById("jobMatchList");
+    employeeMatchList = document.getElementById("employeeMatchList");
+
+    for (var jobMatch in data["jobMatches"]) {
+        var match = document.createElement("div");
+        match.classList.add("match");
+
+        var matchSkills = document.createElement("p");
+        var matchTitle = document.createElement("p");
+        var matchScore = document.createElement("p");
+        var accept = document.createElement("button");
+        var decline = document.createElement("button");
+
+        matchTitle.classList.add("matchInfo");
+        matchScore.classList.add("matchInfo");
+        matchSkills.classList.add("matchInfo");
+        accept.classList.add("matchButton");
+        decline.classList.add("matchButton");
+
+        matchTitle.textContent = jobMatch; 
+        matchScore.textContent = "Match Score: " + Math.round(data["jobMatches"][jobMatch]["matchScore"] * 100) + "%";
+        matchSkills.textContent = "Required Skills: " + data["jobMatches"][jobMatch]["matchSkills"].join(", ");
+        accept.textContent = "Accept";
+        decline.textContent = "Decline"
+
+        match.appendChild(matchTitle);
+        match.appendChild(matchScore);
+        match.appendChild(matchSkills);
+        match.appendChild(accept);
+        match.appendChild(decline);
+
+        jobMatchList.appendChild(match);
+    } 
+
+    for (var employeeMatch in data["employeeMatches"]) {
+        var match = document.createElement("div");
+        match.classList.add("match");
+
+        var matchSkills = document.createElement("p");
+        var matchTitle = document.createElement("p");
+        var matchScore = document.createElement("p");
+        var accept = document.createElement("button");
+        var decline = document.createElement("button");
+
+        matchTitle.classList.add("matchInfo");
+        matchScore.classList.add("matchInfo");
+        matchSkills.classList.add("matchInfo");
+        accept.classList.add("matchButton");
+        decline.classList.add("matchButton");
+
+        matchTitle.textContent = employeeMatch; 
+        matchScore.textContent = "Match Score: " + Math.round(data["jobMatches"][jobMatch]["matchScore"] * 100) + "%";
+        matchSkills.textContent = "Employee Skills: " + data["jobMatches"][jobMatch]["matchSkills"].join(", ");
+        accept.textContent = "Accept";
+        decline.textContent = "Decline"
+
+        match.appendChild(matchTitle);
+        match.appendChild(matchScore);
+        match.appendChild(matchSkills);
+        match.appendChild(accept);
+        match.appendChild(decline);
+
+        jobMatchList.appendChild(match);
+    } 
+}
 
 function addSkill() {
     const newSkillInput = document.getElementById("newSkill");
@@ -114,7 +208,7 @@ function submitJobForm(event) {
         }
 
         socket.close(1000, "Closing Connection");
-        
+
         jobNameInput.value = "";
         descriptionInput.value = "";
         clearJobSkills();

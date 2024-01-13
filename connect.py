@@ -16,7 +16,7 @@ async def addSessionToken(username, token):
     sessionTokens[username] = token
 
     async def expireToken():
-        await asyncio.sleep(86)
+        await asyncio.sleep(86400)
         if username in sessionTokens.keys() and sessionTokens[username] == token:
             del sessionTokens[username]
 
@@ -120,6 +120,8 @@ async def newClientConnected(client_socket):
             await addSkill(client_socket, data)
         elif data["purpose"] == "postJob":
             await postJob(client_socket, data)
+        elif data["purpose"] == "getMatches":
+            await getMatches(client_socket, data)
     except:
         pass
 
@@ -226,8 +228,26 @@ async def postJob(client_socket, data):
     finally:
         connectedClients.remove(client_socket)
 
-setData(["employeeMatches"], {})
-setData(["jobMatches"], {})
+async def getMatches(client_socket, data):
+    try:
+        sessionID = data["sessionToken"]
+        username = data["username"]
+        if username in sessionTokens.keys():
+            if sessionTokens[username] == sessionID:
+                jobMatches = getData(["jobMatches", username])
+                employeeMatches = getData(["employeeMatches", username])
+                data = {"purpose": "returningMatches",
+                        "jobMatches": jobMatches,
+                        "employeeMatches": employeeMatches}
+            else:
+                data = {"purpose": "fail"}
+        else:
+            data = {"purpose": "fail"}
+        await client_socket.send(json.dumps(data))
+    except:
+        pass
+    finally:
+        connectedClients.remove(client_socket)
 
 def determineEmployees(username, job, skills):
     matches = getData(["employeeMatches", username])
@@ -294,13 +314,11 @@ def determineJobs(username, skills):
                 setData(["employeeMatches", poster_username], jobMatches)
 
     setData(["jobMatches", username], matches)
-
     
 def determineSimilarity(w1, w2):
     try:
         return matchModel.wv.similarity(w1=w1, w2=w2)
     except:
-        print("e")
         return 0.25
 
 def calculateMatchScore(partyA, partyB):
