@@ -426,6 +426,8 @@ async def sendMessage(client_socket, data):
         chatID = data["chatName"]
         message = data["message"]
         
+        message = username + ": " + message
+        
         if username in sessionTokens.keys():
             if sessionTokens[username] == sessionID:
                 messages = getData(["chats", username, chatID, "messages"])

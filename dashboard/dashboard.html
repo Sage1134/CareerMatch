@@ -40,24 +40,26 @@
                     <div id="postJobTab" class="contentTab">
                         <div class="contentContainer">
                             <h2>Post A Job Opportunity</h2>
-                            <div id="jobPostBox">
-                                <div id="formBox">
-                                    <form id="jobForm" onsubmit="submitJobForm(event)">
-                                        <label>Job Name:</label>
-                                        <input type="text" id="jobName" required>
-                                
-                                        <label>Short Description:</label>
-                                        <input type="text" id="description" required>
-        
-                                        <label>Job Skills:</label>
-                                        <input type="text" id="requiredSkill">
-                                        <button type="button" id="insertSkill">Add Skill</button>
-                                
-                                        <button type="submit">Post Job</button>
-                                    </form>
-                                    <div id="jobSkillList"></div>
+                            <div id="jobContainer">
+                                <div id="jobPostBox">
+                                    <div id="formBox">
+                                        <form id="jobForm" onsubmit="submitJobForm(event)">
+                                            <label>Job Name:</label>
+                                            <input type="text" id="jobName" required>
+                                    
+                                            <label>Short Description:</label>
+                                            <input type="text" id="description" required>
+            
+                                            <label>Job Skills:</label>
+                                            <input type="text" id="requiredSkill">
+                                            <button type="button" id="insertSkill">Add Skill</button>
+                                    
+                                            <button type="submit">Post Job</button>
+                                        </form>
+                                        <div id="jobSkillList"></div>
+                                    </div>
+                                    <div id="jobList"></div>
                                 </div>
-                                <div id="jobList"></div>
                             </div>
                         </div>
                     </div>
@@ -65,20 +67,29 @@
                         <div class="contentContainer">
                             <h2>Matches</h2>
                             <div id="matchContainer">
-                                <div id="jobMatchList"></div>
-                                <div id="employeeMatchList"></div>
+                                <div class="matchVert">
+                                    <h3>Job Opportunities</h3>
+                                    <div id="jobMatchList"></div>
+                                </div>
+                                <div class="matchVert">
+                                    <h3>Potential Hires</h3>
+                                    <div id="employeeMatchList"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div id="messagesTab" class="contentTab">
                         <div class="contentContainer">
+                            <h2>Messages</h2>
                             <div id="chatBox">
                                 <div id="chats"></div>
                                     <div id="chatContainerRight">
                                     <div>
                                         <div id="messages"></div>
-                                        <input type="text" id="messageInput" placeholder="Type your message...">
-                                        <button id="sendButton">Send</button>
+                                        <div id="sendContainer">
+                                            <input type="text" id="messageInput" placeholder="Type your message...">
+                                            <button id="sendButton">Send</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

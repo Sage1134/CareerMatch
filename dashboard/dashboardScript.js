@@ -139,6 +139,37 @@ document.addEventListener("DOMContentLoaded", function() {
     })
 });
 
+
+function fetchMessages() {
+    const isLocalConnection = window.location.hostname === "10.0.0.138";
+    const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
+
+    const data = {
+        purpose: "getMessages",
+        username: username,
+        sessionToken: sessionID,
+    };
+
+    socket.onopen = function (event) {
+        socket.send(JSON.stringify(data));
+    };
+
+    socket.onmessage = function(event) {
+        var data = JSON.parse(event.data);
+        if (data["purpose"] == "returningMessages") {
+            displayMessages(data);
+        } else if (data["purpose"] == "fail") {
+            alert("Session Invalid Or Expired");
+            window.location.href = "../signIn/signIn.html";
+        }
+
+        socket.close(1000, "Closing Connection")
+    };
+}
+
+setInterval(fetchMessages, 1000);
+
+
 function displayMessages(data) {
     messageList = document.getElementById("chats");
 
