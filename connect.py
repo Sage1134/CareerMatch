@@ -228,8 +228,8 @@ async def postJob(client_socket, data):
                     if jobName not in currentJobs.keys():
                         currentJobs[jobName] = job
                         setData(["postedJobs", username], currentJobs)
+                        determineEmployees(username, jobName, data["skills"])
                         data = {"purpose": "jobPosted"}
-                        determineEmployees(username, jobName, job["skills"])
                     else:
                         data = {"purpose": "jobDuplicate"}
                 else:
@@ -473,12 +473,17 @@ async def signOut(client_socket, data):
 
 
 def determineEmployees(username, job, skills):
+
     matches = getData(["employeeMatches", username])
     if matches is None:
         matches = {}
 
     profiles = getData(["profileSkills"])
-    if username in profiles:
+    
+    if profiles == None:
+        return
+
+    if username in profiles.keys():
         del profiles[username]
 
     for employee_username, profileSkills in profiles.items():
@@ -507,9 +512,9 @@ def determineEmployees(username, job, skills):
             }
             employeeMatches[username + " | " + job] = job_match_data
             setData(["jobMatches", employee_username], employeeMatches)
-
+            
     setData(["employeeMatches", username], matches)
-               
+
 def determineJobs(username, skills):
     matches = getData(["jobMatches", username])
     if matches is None:

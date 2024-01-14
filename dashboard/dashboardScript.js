@@ -98,6 +98,8 @@ document.addEventListener("DOMContentLoaded", function() {
             socket.send(JSON.stringify(data));
         };
 
+        document.getElementById("messageInput").value = "";
+
         socket.onmessage = function(event) {
             var data = JSON.parse(event.data);
             if (data["purpose"] == "messageSent") {
@@ -158,11 +160,8 @@ function fetchMessages() {
         var data = JSON.parse(event.data);
         if (data["purpose"] == "returningMessages") {
             displayMessages(data);
-        } else if (data["purpose"] == "fail") {
-            alert("Session Invalid Or Expired");
-            window.location.href = "../signIn/signIn.html";
         }
-
+        
         socket.close(1000, "Closing Connection")
     };
 }
@@ -620,6 +619,11 @@ function submitJobForm(event) {
         skills: [...currentJobSkills], 
     };
 
+    
+    jobNameInput.value = "";
+    descriptionInput.value = "";
+    clearJobSkills();
+
     const isLocalConnection = window.location.hostname === "10.0.0.138";
     const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
 
@@ -644,10 +648,6 @@ function submitJobForm(event) {
         }
 
         socket.close(1000, "Closing Connection");
-
-        jobNameInput.value = "";
-        descriptionInput.value = "";
-        clearJobSkills();
     };
 }
 
