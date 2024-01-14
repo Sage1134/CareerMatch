@@ -141,6 +141,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
 function displayMessages(data) {
     messageList = document.getElementById("chats");
+
+    while (messageList.firstChild) {
+        messageList.removeChild(messageList.firstChild);
+    }
+    
     for (var message in data["messages"]) {
         var messageContainer = document.createElement("div");
         messageContainer.classList.add("message");

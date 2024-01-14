@@ -40,40 +40,48 @@
                     <div id="postJobTab" class="contentTab">
                         <div class="contentContainer">
                             <h2>Post A Job Opportunity</h2>
-                            <form id="jobForm" onsubmit="submitJobForm(event)">
-                        
-                                <label>Job Name:</label>
-                                <input type="text" id="jobName" required>
-                        
-                                <label>Short Description:</label>
-                                <input type="text" id="description" required>
-
-                                <label>Job Skills:</label>
-                                <input type="text" id="requiredSkill" placeholder="Enter a skill required for this job">
-                                <button type="button" id="insertSkill">Add Skill</button>
-                        
-                                <div id="jobSkillList"></div>
-                        
-                                <button type="submit">Post Job</button>
-                            </form>
-                            <div id="jobList"></div>
+                            <div id="jobPostBox">
+                                <div id="formBox">
+                                    <form id="jobForm" onsubmit="submitJobForm(event)">
+                                        <label>Job Name:</label>
+                                        <input type="text" id="jobName" required>
+                                
+                                        <label>Short Description:</label>
+                                        <input type="text" id="description" required>
+        
+                                        <label>Job Skills:</label>
+                                        <input type="text" id="requiredSkill">
+                                        <button type="button" id="insertSkill">Add Skill</button>
+                                
+                                        <button type="submit">Post Job</button>
+                                    </form>
+                                    <div id="jobSkillList"></div>
+                                </div>
+                                <div id="jobList"></div>
+                            </div>
                         </div>
                     </div>
                     <div id="matchesTab" class="contentTab">
                         <div class="contentContainer">
                             <h2>Matches</h2>
-                            <div id="jobMatchList"></div>
-                            <div id="employeeMatchList"></div>
+                            <div id="matchContainer">
+                                <div id="jobMatchList"></div>
+                                <div id="employeeMatchList"></div>
+                            </div>
                         </div>
                     </div>
                     <div id="messagesTab" class="contentTab">
                         <div class="contentContainer">
-                            <div id="chats"></div>
                             <div id="chatBox">
-                            <div id="messages"></div>
-                            <input type="text" id="messageInput" placeholder="Type your message...">
-                            <button id="sendButton">Send</button>
-                        </div>
+                                <div id="chats"></div>
+                                    <div id="chatContainerRight">
+                                    <div>
+                                        <div id="messages"></div>
+                                        <input type="text" id="messageInput" placeholder="Type your message...">
+                                        <button id="sendButton">Send</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

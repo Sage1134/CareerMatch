@@ -77,6 +77,33 @@ body {
 
 .match {
     background-color: rgb(150, 170, 190);
+    height: 24vh;
+    width: 24vh;
+    padding: 0.5vw;
+    margin: 0.5vh;
+    border-radius: 0.5vw;
+}
+
+#jobMatchList, #employeeMatchList {
+    background-color: rgb(90, 140, 160);
+    display: flex;
+    flex-wrap: wrap;
+    padding: 3vw;
+    flex: 1;
+    width: 28vw;
+    border-radius: 0.5vw;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(50, 60, 70);
+    overflow-y: auto;
+    height: 70vh;
+    max-height: 70vh;
+    justify-content: space-around;
+}
+
+#matchContainer {
+    display: flex;
+    justify-content: space-between;
 }
 
 .contentContainer {
@@ -98,6 +125,21 @@ body {
     cursor: pointer;
     transition: opacity 0.2s;
     margin: 20px;
+}
+
+form button {
+    background-color: rgb(90, 100, 140);
+    color: #fff;
+    padding: 10px;
+    padding-left: 5vw;
+    padding-right: 5vw;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 8px;
+    border-color: rgb(50, 60, 70);
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-bottom: 2vh;
 }
 
 button:hover {
@@ -144,6 +186,7 @@ input {
     border-width: 1px;
     border-style: solid;
     border-color: rgb(50, 60, 70);
+    margin-bottom: 2vh;
 }
 
 .tabButton {
@@ -172,4 +215,108 @@ input {
 
 ::-webkit-scrollbar-track {
     background-color: rgba(255, 255, 255, 0.5);
+}
+
+form {
+    background-color: rgb(120, 140, 160);
+    display: flex;
+    flex-direction: column;
+    padding: 3vw;
+    border-radius: 1vw;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(50, 60, 70);
+}
+
+#postJobTab {
+    display: flex;
+}
+
+#formBox {
+    display: flex;
+    flex-direction: column;
+}
+
+#jobSkillList {
+    background-color: rgb(100, 140, 160);
+    display: flex;
+    flex-direction: column;
+    padding: 3vw;
+    height: 120px;
+    max-height: 120px;;
+    border-radius: 0.5vw;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(50, 60, 70);
+    overflow-y: auto;
+}
+
+#jobPostBox {
+    display: flex;
+}
+
+#jobList {
+    background-color: rgb(90, 140, 160);
+    display: flex;
+    flex-wrap: wrap;
+    padding: 3vw;
+    flex: 1;
+    width: 40vw;
+    border-radius: 0.5vw;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(50, 60, 70);
+    overflow-y: auto;
+    height: 70vh;
+    max-height: 70vh;
+    justify-content: space-around;
+}
+
+
+#chatBox {
+    display: flex;
+    flex-direction: row;
+}
+
+#chats {
+    background-color: rgb(90, 140, 160);
+    display: flex;
+    flex-wrap: wrap;
+    padding: 3vw;
+    flex: 1;
+    width: 20vw;
+    border-radius: 0.5vw;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(50, 60, 70);
+    overflow-y: auto;
+    height: 70vh;
+    max-height: 70vh;
+    justify-content: space-around;
+}
+
+#messages {
+    background-color: rgb(222, 222, 255);
+    display: flex;
+    flex-wrap: wrap;
+    padding: 3vw;
+    flex: 1;
+    width: 30vw;
+    border-radius: 0.5vw;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(50, 60, 70);
+    overflow-y: auto;
+    height: 70vh;
+    max-height: 70vh;
+    justify-content: space-around;
+}
+
+.jobPost {
+    background-color: rgb(150, 180, 220);
+    height: 22vh;
+    width: 22vh;
+    padding: 0.5vw;
+    margin: 1vh;
+    border-radius: 0.5vw;
 }
