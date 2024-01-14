@@ -300,6 +300,7 @@ function displayMatches(data) {
                 };
         
                 socket.onmessage = function (event) {
+                    alert("Accept Success");
                     var responseData = JSON.parse(event.data);
                     if (responseData["purpose"] == "chatAccepted") {
                         const isLocalConnection = window.location.hostname === "10.0.0.138";
@@ -361,6 +362,7 @@ function displayMatches(data) {
                 };
     
                 socket.onmessage = function(event) {
+                    alert("Decline Success");
                     var data = JSON.parse(event.data);
                     if (data["purpose"] == "chatDeclined") {
                         const isLocalConnection = window.location.hostname === "10.0.0.138";
@@ -453,6 +455,7 @@ function displayMatches(data) {
                 };
         
                 socket.onmessage = function (event) {
+                    alert("Accept Success");
                     var responseData = JSON.parse(event.data);
                     if (responseData["purpose"] == "chatAccepted") {
                         const isLocalConnection = window.location.hostname === "10.0.0.138";
@@ -513,6 +516,7 @@ function displayMatches(data) {
             };
         
             socket.onmessage = function (event) {
+                alert("Decline Success");
                 var data = JSON.parse(event.data);
                 if (data["purpose"] == "chatDeclined") {
                     const isLocalConnection = window.location.hostname === "10.0.0.138";
