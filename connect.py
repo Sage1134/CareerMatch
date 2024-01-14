@@ -132,6 +132,8 @@ async def newClientConnected(client_socket):
             await getMessageData(client_socket, data)
         elif data["purpose"] == "sendMessage":
             await sendMessage(client_socket, data)
+        elif data["purpose"] == "getJobList":
+            await getJobList(client_socket, data)
     except:
         pass
 
@@ -270,6 +272,27 @@ async def getMessages(client_socket, data):
                     messages = {}
                 data = {"purpose": "returningMessages",
                         "messages": messages}
+            else:
+                data = {"purpose": "fail"}
+        else:
+            data = {"purpose": "fail"}
+        await client_socket.send(json.dumps(data))
+    except:
+        pass
+    finally:
+        connectedClients.remove(client_socket)
+
+async def getJobList(client_socket, data):
+    try:
+        sessionID = data["sessionToken"]
+        username = data["username"]
+        if username in sessionTokens.keys():
+            if sessionTokens[username] == sessionID:
+                jobs = getData(["postedJobs", username])
+                if jobs == None:
+                    jobs = {}
+                data = {"purpose": "returningJobs",
+                        "jobs": jobs}
             else:
                 data = {"purpose": "fail"}
         else:

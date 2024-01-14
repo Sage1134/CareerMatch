@@ -609,7 +609,36 @@ function submitJobForm(event) {
 }
 
 function updateJobList() {
-    console.log("e");
+    const data = {
+        purpose: "getJobList",
+        username: username,
+        sessionToken: sessionID,
+      };
+
+    socket.onopen = function (event) {
+        socket.send(JSON.stringify(data));
+    };
+
+    socket.onmessage = function(event) {
+        var data = JSON.parse(event.data);
+        if (data["purpose"] == "returningJobList") {
+            const jobList = document.getElementById("jobList");
+    
+            while (jobList.firstChild) {
+                jobList.removeChild(jobList.firstChild)
+            }
+
+            for (var job in jobList) {
+                console.log(job);
+            }
+        }
+        else if (data["purpose"] == "fail") {
+            alert("Session Invalid Or Expired");
+            window.location.href = "../signIn/signIn.html";
+        }
+
+        socket.close(1000, "Closing Connection");
+    };
 }
 
 function clearJobSkills() {
