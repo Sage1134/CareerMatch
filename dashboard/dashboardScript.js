@@ -1,8 +1,10 @@
 const sessionID = getLocalStorageItem("sessionID");
 const username = getLocalStorageItem("username")
 const currentJobSkills = [];
+const welcome = document.getElementById("welcome");
 
 document.addEventListener("DOMContentLoaded", function() {
+    welcome.innerHTML = "Welcome, " + username + "!";
     const tabs = document.querySelectorAll(".tab");
 
     tabs.forEach(tab => {
@@ -19,6 +21,9 @@ document.addEventListener("DOMContentLoaded", function() {
             this.classList.add("active");
         });
     });
+
+    updateSkillList();
+    document.getElementById("signOutButton").addEventListener("click", signOut);
     document.getElementById("updateProfileTabButton").addEventListener("click", updateSkillList);
     document.getElementById("jobPostTabButton").addEventListener("click", updateJobList);
     document.getElementById("insertSkill").addEventListener("click", insertSkill);
@@ -710,6 +715,35 @@ function updateSkillList() {
         }
 
         socket.close(1000, "Closing Connection");
+    };
+}
+
+function signOut(event) {
+    const isLocalConnection = window.location.hostname === '10.0.0.138';
+    const socket = new WebSocket(isLocalConnection ? 'ws://10.0.0.138:1134' : 'ws://99.245.65.253:1134');
+
+    const data = {
+        purpose: "signOut",
+        username: username,
+        sessionToken: sessionID,
+      };
+    
+    socket.onopen = function (event) {
+        socket.send(JSON.stringify(data));
+    };
+
+    socket.onmessage = function(event) {
+        var data = JSON.parse(event.data);
+        if (data["purpose"] == "fail") {
+            alert("Session Invalid Or Expired");
+            window.location.href = "../signIn/signIn.html";
+        }
+        else if (data["purpose"] == "signOutSuccess") {
+            localStorage.removeItem("username");
+            localStorage.removeItem("sessionID");
+            window.location.href = "../signIn/signIn.html";
+        }
+        socket.close(1000, "Closing Connection");   
     };
 }
 

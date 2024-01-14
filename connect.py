@@ -136,6 +136,8 @@ async def newClientConnected(client_socket):
             await getJobList(client_socket, data)
         elif data["purpose"] == "getSkillList":
             await getSkillList(client_socket, data)
+        elif data["purpose"] == "signOut":
+            await signOut(client_socket, data)
     except:
         pass
 
@@ -305,7 +307,6 @@ async def getJobList(client_socket, data):
     finally:
         connectedClients.remove(client_socket)
 
-
 async def getSkillList(client_socket, data):
     try:
         sessionID = data["sessionToken"]
@@ -448,6 +449,26 @@ async def sendMessage(client_socket, data):
         pass
     finally:
         connectedClients.remove(client_socket)
+
+async def signOut(client_socket, data):
+    try:
+        sessionID = data["sessionToken"]
+        username = data["username"]
+
+        if username in sessionTokens.keys():
+            if sessionTokens[username] == sessionID:
+                del sessionTokens[username]
+                data = {"purpose": "signOutSuccess"}
+            else:
+                data = {"purpose": "fail"}
+        else:
+            data = {"purpose": "fail"}
+        await client_socket.send(json.dumps(data))
+    except:
+        pass
+    finally:
+        connectedClients.remove(client_socket)
+
 
 def determineEmployees(username, job, skills):
     matches = getData(["employeeMatches", username])
