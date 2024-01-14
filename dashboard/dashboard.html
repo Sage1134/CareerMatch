@@ -17,7 +17,7 @@
                 <div class="tab" data-tab="matches" id="matchesTabButton">
                     <button>Matches</button>
                 </div>
-                <div class="tab" data-tab="messages">
+                <div class="tab" data-tab="messages" id="messagesTabButton">
                     <button>Messages</button>
                 </div>
                 <button>Sign Out</button>
@@ -57,15 +57,16 @@
                     </div>
                     <div id="matchesTab" class="contentTab">
                         <h2>Matches</h2>
-                        <div id="jobMatchList">
-
-                        </div>
-                        <div id="employeeMatchList">
-
-                        </div>
+                        <div id="jobMatchList"></div>
+                        <div id="employeeMatchList"></div>
                     </div>
                     <div id="messagesTab" class="contentTab">
-                        <p>Messages Content</p>
+                        <div id="chats"></div>
+                        <div id="chatBox">
+                            <div id="messages"></div>
+                            <input type="text" id="messageInput" placeholder="Type your message...">
+                            <button id="sendButton">Send</button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -122,6 +122,16 @@ async def newClientConnected(client_socket):
             await postJob(client_socket, data)
         elif data["purpose"] == "getMatches":
             await getMatches(client_socket, data)
+        elif data["purpose"] == "acceptChat":
+            await acceptChat(client_socket, data)
+        elif data["purpose"] == "declineChat":
+            await declineChat(client_socket, data)
+        elif data["purpose"] == "getMessages":
+            await getMessages(client_socket, data)
+        elif data["purpose"] == "getMessageData":
+            await getMessageData(client_socket, data)
+        elif data["purpose"] == "sendMessage":
+            await sendMessage(client_socket, data)
     except:
         pass
 
@@ -249,6 +259,135 @@ async def getMatches(client_socket, data):
     finally:
         connectedClients.remove(client_socket)
 
+async def getMessages(client_socket, data):
+    try:
+        sessionID = data["sessionToken"]
+        username = data["username"]
+        if username in sessionTokens.keys():
+            if sessionTokens[username] == sessionID:
+                messages = getData(["chats", username])
+                if messages == None:
+                    messages = {}
+                data = {"purpose": "returningMessages",
+                        "messages": messages}
+            else:
+                data = {"purpose": "fail"}
+        else:
+            data = {"purpose": "fail"}
+        await client_socket.send(json.dumps(data))
+    except:
+        pass
+    finally:
+        connectedClients.remove(client_socket)
+
+async def getMessageData(client_socket, data):
+    try:
+        sessionID = data["sessionToken"]
+        username = data["username"]
+        chatID = data["chatID"]
+        
+        if username in sessionTokens.keys():
+            if sessionTokens[username] == sessionID:
+                messages = getData(["chats", username, chatID, "messages"])
+                if messages == None:
+                    messages = []
+                data = {"purpose": "returningMessageData",
+                        "messages": messages}
+            else:
+                data = {"purpose": "fail"}
+        else:
+            data = {"purpose": "fail"}
+        await client_socket.send(json.dumps(data))
+    except:
+        pass
+    finally:
+        connectedClients.remove(client_socket)
+
+async def acceptChat(client_socket, data):
+    try:
+        sessionID = data["sessionToken"]
+        username = data["username"]
+        chatName = data["chatID"]
+        otherClient = data["otherClient"]
+        jobName = data["jobName"]
+        jobPoster = data["jobPoster"]
+        jobReciever = data["jobReciever"]
+
+        if username in sessionTokens.keys():
+            if sessionTokens[username] == sessionID:
+                chatStatus = getData(["chats", otherClient, chatName, "accepted"])
+                if chatStatus == True:
+                    # Fix matches not deleting
+                    delData(["chats", otherClient, chatName, "accepted"])
+                    setData(["chats", username, chatName, "messages"], [])
+                    setData(["chats", otherClient, chatName, "messages"], [])
+                    
+                    delData(["jobMatches", jobReciever, jobName])
+                    delData(["employeeMatches", jobPoster, jobName])
+                    data = {"purpose": "chatAccepted"}
+                else:
+                    setData(["chats", username, chatName, "accepted"], True)
+            else:
+                data = {"purpose": "fail"}
+        else:
+            data = {"purpose": "fail"}
+        await client_socket.send(json.dumps(data))
+    except:
+        pass
+    finally:
+        connectedClients.remove(client_socket)
+
+async def declineChat(client_socket, data):
+    try:
+        sessionID = data["sessionToken"]
+        username = data["username"]
+        chatName = data["chatName"]
+        otherClient = data["otherClient"]
+        jobName = data["jobName"]
+        jobPoster = data["jobPoster"]
+        jobReciever = data["jobReciever"]
+        
+        if username in sessionTokens.keys():
+            if sessionTokens[username] == sessionID:
+                delData(["chats", otherClient, chatName, "accepted"])
+                delData(["jobMatches", jobReciever, jobName])
+                delData(["employeeMatches", jobPoster, jobName])
+                data = {"purpose": "chatDeclined"}
+            else:
+                data = {"purpose": "fail"}
+        else:
+            data = {"purpose": "fail"}
+        await client_socket.send(json.dumps(data))
+    except:
+        pass
+    finally:
+        connectedClients.remove(client_socket)
+
+async def sendMessage(client_socket, data):
+    try:
+        sessionID = data["sessionToken"]
+        username = data["username"]
+        chatID = data["chatName"]
+        message = data["message"]
+        
+        if username in sessionTokens.keys():
+            if sessionTokens[username] == sessionID:
+                messages = getData(["chats", username, chatID, "messages"])
+                if messages == None:
+                    messages = []
+                messages.append(message)
+                setData(["chats", username, chatID, "messages"], messages)
+                data = {"purpose": "messageSent"}
+            else:
+                data = {"purpose": "fail"}
+        else:
+            data = {"purpose": "fail"}
+        await client_socket.send(json.dumps(data))
+    except:
+        pass
+    finally:
+        connectedClients.remove(client_socket)
+
 def determineEmployees(username, job, skills):
     matches = getData(["employeeMatches", username])
     if matches is None:
@@ -263,8 +402,11 @@ def determineEmployees(username, job, skills):
         if score >= 0.6:
             data = {
                 "job": job,
+                "jobPoster": username,
+                "jobReciever": employee_username,
                 "matchScore": score,
-                "matchSkills": profileSkills
+                "matchSkills": profileSkills,
+                "otherClient": employee_username
             }
             matches[employee_username + " | " + job] = data
 
@@ -273,8 +415,11 @@ def determineEmployees(username, job, skills):
                 employeeMatches = {}
             job_match_data = {
                 "job": job,
+                "jobPoster": username,
+                "jobReciever": employee_username,
                 "matchScore": score,
-                "matchSkills": skills
+                "matchSkills": skills,
+                "otherClient": username
             }
             employeeMatches[username + " | " + job] = job_match_data
             setData(["jobMatches", employee_username], employeeMatches)
@@ -297,8 +442,11 @@ def determineJobs(username, skills):
             if score >= 0.6:
                 data = {
                     "job": job_name,
+                    "jobPoster": poster_username,
+                    "jobReciever": username,
                     "matchScore": score,
-                    "matchSkills": jobSkills
+                    "matchSkills": jobSkills,
+                    "otherClient": username
                 }
                 matches[poster_username + " | " + job_name] = data
 
@@ -307,8 +455,11 @@ def determineJobs(username, skills):
                     jobMatches = {}
                 employee_match_data = {
                     "job": job_name,
+                    "jobPoster": poster_username,
+                    "jobReciever": username,
                     "matchScore": score,
-                    "matchSkills": skills
+                    "matchSkills": skills,
+                    "otherClient": poster_username
                 }
                 jobMatches[username + " | " + job_name] = employee_match_data
                 setData(["employeeMatches", poster_username], jobMatches)
