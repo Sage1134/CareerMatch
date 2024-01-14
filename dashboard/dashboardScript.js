@@ -94,7 +94,33 @@ document.addEventListener("DOMContentLoaded", function() {
         socket.onmessage = function(event) {
             var data = JSON.parse(event.data);
             if (data["purpose"] == "messageSent") {
-                //displayMessages(data);
+                const isLocalConnection = window.location.hostname === "10.0.0.138";
+                const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
+
+                const data = {
+                    purpose: "getMessageData",
+                    username: username,
+                    sessionToken: sessionID,
+                    chatID: getLocalStorageItem("currentChat"),
+                };
+                
+                socket.onopen = function (event) {
+                    setLocalStorageItem("currentChat",getLocalStorageItem("currentChat"));
+                    socket.send(JSON.stringify(data));
+                };
+
+                socket.onmessage = function(event) {
+                    var data = JSON.parse(event.data);
+                    if (data["purpose"] == "returningMessageData") {
+                        updateMessages(data);
+                    }
+                    else if (data["purpose"] == "fail") {
+                        alert("Session Invalid Or Expired");
+                        window.location.href = "../signIn/signIn.html";
+                    }
+
+                    socket.close(1000, "Closing Connection");
+                };
             }
             else if (data["purpose"] == "fail") {
                 alert("Session Invalid Or Expired");
@@ -108,7 +134,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 function displayMessages(data) {
     messageList = document.getElementById("chats");
-
     for (var message in data["messages"]) {
         var messageContainer = document.createElement("div");
         messageContainer.classList.add("message");
@@ -157,6 +182,9 @@ function displayMessages(data) {
 
 function updateMessages(data) {
     const messageBox = document.getElementById("messages");
+    while (messageBox.firstChild) {
+        messageBox.removeChild(messageBox.firstChild);
+    }
 
     for (var message in data["messages"]) {
         if (data["messages"].hasOwnProperty(message)) {
@@ -168,8 +196,15 @@ function updateMessages(data) {
 }
 
 function displayMatches(data) {
-    jobMatchList = document.getElementById("jobMatchList");
-    employeeMatchList = document.getElementById("employeeMatchList");
+    const jobMatchList = document.getElementById("jobMatchList");
+    const employeeMatchList = document.getElementById("employeeMatchList");
+
+    while (jobMatchList.firstChild) {
+        jobMatchList.removeChild(jobMatchList.firstChild);
+    }
+    while (employeeMatchList.firstChild) {
+        employeeMatchList.removeChild(employeeMatchList.firstChild);
+    }
 
     for (var jobMatch in data["jobMatches"]) {
         var match = document.createElement("div");
@@ -204,7 +239,8 @@ function displayMatches(data) {
                 var chatName = data["jobMatches"][jobMatch]["jobPoster"] + " and " + data["jobMatches"][jobMatch]["jobReciever"] + " | " + data["jobMatches"][jobMatch]["job"];
                 const isLocalConnection = window.location.hostname === "10.0.0.138";
                 const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134": "ws://99.245.65.253:1134");
-        
+                var jobIndex = data["jobMatches"][jobMatch]["jobReciever"] + " | " + data["jobMatches"][jobMatch]["job"]
+
                 const requestData = {
                     purpose: "acceptChat",
                     username: username,
@@ -213,9 +249,10 @@ function displayMatches(data) {
                     otherClient: data["jobMatches"][jobMatch]["otherClient"],
                     jobPoster: data["jobMatches"][jobMatch]["jobPoster"],
                     jobReciever: data["jobMatches"][jobMatch]["jobReciever"],
-                    jobName: jobMatch
+                    jobName: jobMatch,
+                    jobMatchInfo: jobIndex
                 };
-
+                
                 socket.onopen = function (event) {
                     socket.send(JSON.stringify(requestData));
                 };
@@ -223,7 +260,31 @@ function displayMatches(data) {
                 socket.onmessage = function (event) {
                     var responseData = JSON.parse(event.data);
                     if (responseData["purpose"] == "chatAccepted") {
-                        // displayMatches(responseData);
+                        const isLocalConnection = window.location.hostname === "10.0.0.138";
+                        const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
+                        
+                        const data = {
+                            purpose: "getMatches",
+                            username: username,
+                            sessionToken: sessionID,
+                        };
+                    
+                        socket.onopen = function (event) {
+                            socket.send(JSON.stringify(data));
+                        };
+                
+                        socket.onmessage = function(event) {
+                            var data = JSON.parse(event.data);
+                            if (data["purpose"] == "returningMatches") {
+                                displayMatches(data);
+                            }
+                            else if (data["purpose"] == "fail") {
+                                alert("Session Invalid Or Expired");
+                                window.location.href = "../signIn/signIn.html";
+                            }
+                
+                            socket.close(1000, "Closing Connection");
+                        }; 
                     } else if (responseData["purpose"] == "fail") {
                         alert("Session Invalid Or Expired");
                         window.location.href = "../signIn/signIn.html";
@@ -233,30 +294,58 @@ function displayMatches(data) {
             };
         })(jobMatch));        
 
-        decline.addEventListener("click", (function(jobMatch) {
+        decline.addEventListener("click", (function (jobMatch) {
             return function() {
                 var chatName = data["jobMatches"][jobMatch]["jobPoster"] + " and " + data["jobMatches"][jobMatch]["jobReciever"] + " | " + data["jobMatches"][jobMatch]["job"];
-                const isLocalConnection = window.location.hostname === "10.0.0.138";
-                const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
-            
-                const data = {
+                var jobIndex = data["jobMatches"][jobMatch]["jobPoster"] + " | " + data["jobMatches"][jobMatch]["job"]
+                
+                const requestData = {
                     purpose: "acceptChat",
                     username: username,
                     sessionToken: sessionID,
                     chatID: chatName,
-                    otherClient: data["employeeMatches"][jobMatch]["otherClient"],
+                    otherClient: data["jobMatches"][jobMatch]["otherClient"],
                     jobPoster: data["jobMatches"][jobMatch]["jobPoster"],
-                    jobReciever: data["jobMatches"][jobMatch]["jobReciever"]
+                    jobReciever: data["jobMatches"][jobMatch]["jobReciever"],
+                    jobName: jobMatch,
+                    jobMatchInfo: jobIndex,
                 };
-        
+                
+                const isLocalConnection = window.location.hostname === "10.0.0.138";
+                const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
+
                 socket.onopen = function (event) {
-                    socket.send(JSON.stringify(data));
+                    socket.send(JSON.stringify(requestData));
                 };
     
                 socket.onmessage = function(event) {
                     var data = JSON.parse(event.data);
                     if (data["purpose"] == "chatDeclined") {
-                        //displayMatches(data);
+                        const isLocalConnection = window.location.hostname === "10.0.0.138";
+                        const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
+                        
+                        const data = {
+                            purpose: "getMatches",
+                            username: username,
+                            sessionToken: sessionID,
+                          };
+                    
+                        socket.onopen = function (event) {
+                            socket.send(JSON.stringify(data));
+                        };
+                
+                        socket.onmessage = function(event) {
+                            var data = JSON.parse(event.data);
+                            if (data["purpose"] == "returningMatches") {
+                                displayMatches(data);
+                            }
+                            else if (data["purpose"] == "fail") {
+                                alert("Session Invalid Or Expired");
+                                window.location.href = "../signIn/signIn.html";
+                            }
+                
+                            socket.close(1000, "Closing Connection");
+                        };
                     }
                     else if (data["purpose"] == "fail") {
                         alert("Session Invalid Or Expired");
@@ -304,6 +393,7 @@ function displayMatches(data) {
                 const isLocalConnection = window.location.hostname === "10.0.0.138";
                 const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134": "ws://99.245.65.253:1134");
 
+                var jobIndex = data["employeeMatches"][employeeMatch]["jobPoster"] + " | " + data["employeeMatches"][employeeMatch]["job"]
                 const requestData = {
                     purpose: "acceptChat",
                     username: username,
@@ -312,7 +402,8 @@ function displayMatches(data) {
                     otherClient: data["employeeMatches"][employeeMatch]["otherClient"],
                     jobPoster: data["employeeMatches"][employeeMatch]["jobPoster"],
                     jobReciever: data["employeeMatches"][employeeMatch]["jobReciever"],
-                    jobName: jobMatch
+                    jobName: jobIndex,
+                    jobMatchInfo: employeeMatch,
                 };
 
                 socket.onopen = function (event) {
@@ -322,7 +413,32 @@ function displayMatches(data) {
                 socket.onmessage = function (event) {
                     var responseData = JSON.parse(event.data);
                     if (responseData["purpose"] == "chatAccepted") {
-                        // displayMatches(responseData);
+                        const isLocalConnection = window.location.hostname === "10.0.0.138";
+                        const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
+                        
+                        const requestData = {
+                            purpose: "getMatches",
+                            username: username,
+                            sessionToken: sessionID,
+                          };
+                    
+                        socket.onopen = function (event) {
+                            socket.send(JSON.stringify(requestData));
+                        };
+                
+                        socket.onmessage = function(event) {
+                            var data = JSON.parse(event.data);
+                            if (data["purpose"] == "returningMatches") {
+                                displayMatches(data);
+                            }
+                            else if (data["purpose"] == "fail") {
+                                alert("Session Invalid Or Expired");
+                                window.location.href = "../signIn/signIn.html";
+                            }
+                
+                            socket.close(1000, "Closing Connection");
+                        };
+
                     } else if (responseData["purpose"] == "fail") {
                         alert("Session Invalid Or Expired");
                         window.location.href = "../signIn/signIn.html";
@@ -330,42 +446,65 @@ function displayMatches(data) {
                     socket.close(1000, "Closing Connection");
                 };
             };  
-        })(employeeMatch));        
+        })(employeeMatch));
 
-        decline.addEventListener("click", (function(employeeMatch) {
-            return function() {
-                var chatName = data["employeeMatches"][employeeMatch]["jobPoster"] + " and " + data["employeeMatches"][employeeMatch]["jobReciever"] + " | " + data["employeeMatches"][employeeMatch]["job"];
-                const isLocalConnection = window.location.hostname === "10.0.0.138";
-                const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
-            
-                const data = {
-                    purpose: "acceptChat",
-                    username: username,
-                    sessionToken: sessionID,
-                    chatID: chatName,
-                    otherClient: data["employeeMatches"][employeeMatch]["otherClient"],
-                    jobPoster: data["employeeMatches"][employeeMatch]["jobPoster"],
-                    jobReciever: data["employeeMatches"][employeeMatch]["jobReciever"]
-                };
+        decline.addEventListener("click", (function (employeeMatch) {
+            var chatName = data["employeeMatches"][employeeMatch]["jobPoster"] + " and " + data["employeeMatches"][employeeMatch]["jobReciever"] + " | " + data["employeeMatches"][employeeMatch]["job"];
+            var jobIndex = data["employeeMatches"][employeeMatch]["jobPoster"] + " | " + data["employeeMatches"][employeeMatch]["job"]
         
-                socket.onopen = function (event) {
-                    socket.send(JSON.stringify(data));
-                };
-    
-                socket.onmessage = function(event) {
-                    var data = JSON.parse(event.data);
-                    if (data["purpose"] == "chatDeclined") {
-                        //displayMatches(data);
-                    }
-                    else if (data["purpose"] == "fail") {
-                        alert("Session Invalid Or Expired");
-                        window.location.href = "../signIn/signIn.html";
-                    }
-                    socket.close(1000, "Closing Connection");
-                };
+            const requestData = {
+                purpose: "acceptChat",
+                username: username,
+                sessionToken: sessionID,
+                chatID: chatName,
+                otherClient: data["employeeMatches"][employeeMatch]["otherClient"],
+                jobPoster: data["employeeMatches"][employeeMatch]["jobPoster"],
+                jobReciever: data["employeeMatches"][employeeMatch]["jobReciever"],
+                jobMatchInfo: jobIndex,
             };
-        })(employeeMatch))
-
+        
+            const isLocalConnection = window.location.hostname === "10.0.0.138";
+            const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
+        
+            socket.onopen = function (event) {
+                socket.send(JSON.stringify(requestData));
+            };
+        
+            socket.onmessage = function (event) {
+                var data = JSON.parse(event.data);
+                if (data["purpose"] == "chatDeclined") {
+                    const isLocalConnection = window.location.hostname === "10.0.0.138";
+                    const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
+        
+                    const data = {
+                        purpose: "getMatches",
+                        username: username,
+                        sessionToken: sessionID,
+                    };
+        
+                    socket.onopen = function (event) {
+                        socket.send(JSON.stringify(data));
+                    };
+        
+                    socket.onmessage = function(event) {
+                        var data = JSON.parse(event.data);
+                        if (data["purpose"] == "returningMatches") {
+                            displayMatches(data);
+                        } else if (data["purpose"] == "fail") {
+                            alert("Session Invalid Or Expired");
+                            window.location.href = "../signIn/signIn.html";
+                        }
+        
+                        socket.close(1000, "Closing Connection");
+                    };
+                } else if (data["purpose"] == "fail") {
+                    alert("Session Invalid Or Expired");
+                    window.location.href = "../signIn/signIn.html";
+                }
+                socket.close(1000, "Closing Connection");
+            };
+        })(employeeMatch));
+        
         employeeMatchList.appendChild(match);
     } 
 }

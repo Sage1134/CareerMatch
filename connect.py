@@ -312,21 +312,23 @@ async def acceptChat(client_socket, data):
         jobName = data["jobName"]
         jobPoster = data["jobPoster"]
         jobReciever = data["jobReciever"]
-
+        jobIndex = data["jobMatchInfo"]
         if username in sessionTokens.keys():
             if sessionTokens[username] == sessionID:
                 chatStatus = getData(["chats", otherClient, chatName, "accepted"])
-                if chatStatus == True:
-                    # Fix matches not deleting
-                    delData(["chats", otherClient, chatName, "accepted"])
-                    setData(["chats", username, chatName, "messages"], [])
-                    setData(["chats", otherClient, chatName, "messages"], [])
-                    
-                    delData(["jobMatches", jobReciever, jobName])
-                    delData(["employeeMatches", jobPoster, jobName])
-                    data = {"purpose": "chatAccepted"}
+                yourChatStatus = getData(["chats", username, chatName, "accepted"])
+                if yourChatStatus == None:
+                    if chatStatus == True:
+                        delData(["chats", otherClient, chatName, "accepted"])
+                        setData(["chats", username, chatName, "messages"], [])
+                        setData(["chats", otherClient, chatName, "messages"], [])
+                        delData(["jobMatches", jobReciever, jobName])
+                        delData(["employeeMatches", jobPoster, jobIndex])
+                        data = {"purpose": "chatAccepted"}
+                    else:
+                        setData(["chats", username, chatName, "accepted"], True)
                 else:
-                    setData(["chats", username, chatName, "accepted"], True)
+                    data = {"purpose": "chatAccepted"}
             else:
                 data = {"purpose": "fail"}
         else:
@@ -341,18 +343,24 @@ async def declineChat(client_socket, data):
     try:
         sessionID = data["sessionToken"]
         username = data["username"]
-        chatName = data["chatName"]
+        chatName = data["chatID"]
         otherClient = data["otherClient"]
         jobName = data["jobName"]
         jobPoster = data["jobPoster"]
         jobReciever = data["jobReciever"]
+        jobIndex = data["jobMatchInfo"]
         
         if username in sessionTokens.keys():
             if sessionTokens[username] == sessionID:
-                delData(["chats", otherClient, chatName, "accepted"])
-                delData(["jobMatches", jobReciever, jobName])
-                delData(["employeeMatches", jobPoster, jobName])
-                data = {"purpose": "chatDeclined"}
+                yourChatStatus = getData(["chats", username, chatName, "accepted"])
+                if yourChatStatus == None:
+                    setData(["chats", username, chatName, "accepted"], False)
+                    delData(["chats", otherClient, chatName, "accepted"])
+                    delData(["jobMatches", jobReciever, jobIndex])
+                    delData(["employeeMatches", jobPoster, jobName])
+                    data = {"purpose": "chatDeclined"}
+                else:
+                    data = {"purpose": "chatDeclined"}
             else:
                 data = {"purpose": "fail"}
         else:
@@ -376,7 +384,13 @@ async def sendMessage(client_socket, data):
                 if messages == None:
                     messages = []
                 messages.append(message)
-                setData(["chats", username, chatID, "messages"], messages)
+                
+                names = chatID.split(" | ")[0]
+                names = names.split(" and ")
+                
+                setData(["chats", names[0], chatID, "messages"], messages)
+                setData(["chats", names[1], chatID, "messages"], messages)
+                
                 data = {"purpose": "messageSent"}
             else:
                 data = {"purpose": "fail"}
