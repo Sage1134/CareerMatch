@@ -19,6 +19,8 @@ document.addEventListener("DOMContentLoaded", function() {
             this.classList.add("active");
         });
     });
+    document.getElementById("updateProfileTabButton").addEventListener("click", updateSkillList);
+    document.getElementById("jobPostTabButton").addEventListener("click", updateJobList);
     document.getElementById("insertSkill").addEventListener("click", insertSkill);
     document.getElementById("matchesTabButton").addEventListener("click", function() {
         const isLocalConnection = window.location.hostname === "10.0.0.138";
@@ -615,21 +617,39 @@ function updateJobList() {
         sessionToken: sessionID,
       };
 
+    const isLocalConnection = window.location.hostname === "10.0.0.138";
+    const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
+
     socket.onopen = function (event) {
         socket.send(JSON.stringify(data));
     };
 
     socket.onmessage = function(event) {
         var data = JSON.parse(event.data);
-        if (data["purpose"] == "returningJobList") {
+        if (data["purpose"] == "returningJobs") {
             const jobList = document.getElementById("jobList");
     
             while (jobList.firstChild) {
                 jobList.removeChild(jobList.firstChild)
             }
 
-            for (var job in jobList) {
-                console.log(job);
+            for (var job in data["jobs"]) {
+                var jobPost = document.createElement("div");
+                jobPost.classList.add("jobPost");
+
+                var jobTitle = document.createElement("p");
+                var jobDesc = document.createElement("p");
+                var jobSkills = document.createElement("p");
+
+                jobTitle.textContent = job; 
+                jobDesc.textContent = "Description: " + data["jobs"][job]["description"];
+                jobSkills.textContent = "Required Skills: " + data["jobs"][job]["skills"].join(", ");
+
+                jobPost.appendChild(jobTitle);
+                jobPost.appendChild(jobDesc);
+                jobPost.appendChild(jobSkills);
+
+                jobList.appendChild(jobPost);
             }
         }
         else if (data["purpose"] == "fail") {
@@ -649,7 +669,48 @@ function clearJobSkills() {
 }
 
 function updateSkillList() {
-    console.log("e");
+    const data = {
+        purpose: "getSkillList",
+        username: username,
+        sessionToken: sessionID,
+      };
+
+    const isLocalConnection = window.location.hostname === "10.0.0.138";
+    const socket = new WebSocket(isLocalConnection ? "ws://10.0.0.138:1134" : "ws://99.245.65.253:1134");
+
+    socket.onopen = function (event) {
+        socket.send(JSON.stringify(data));
+    };
+
+    socket.onmessage = function(event) {
+        var data = JSON.parse(event.data);
+        if (data["purpose"] == "returningSkills") {
+            const skillList = document.getElementById("skillList");
+    
+            while (skillList.firstChild) {
+                skillList.removeChild(skillList.firstChild)
+            }
+
+            for (var skill in data["skills"]) {
+                var skillset = document.createElement("div");
+                skillset.classList.add("skillset");
+
+                var skillName = document.createElement("p");
+
+                skillName.textContent = data["skills"][skill]; 
+
+                skillset.appendChild(skillName);
+
+                skillList.appendChild(skillset);
+            }
+        }
+        else if (data["purpose"] == "fail") {
+            alert("Session Invalid Or Expired");
+            window.location.href = "../signIn/signIn.html";
+        }
+
+        socket.close(1000, "Closing Connection");
+    };
 }
 
 function setLocalStorageItem(key, value) {
